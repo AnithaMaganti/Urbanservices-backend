@@ -4,18 +4,23 @@ import com.urbanservices.dto.LoginRequest;
 import com.urbanservices.dto.OtpValidationRequest;
 import com.urbanservices.dto.RegisterRequest;
 import com.urbanservices.model.Otp;
+import com.urbanservices.model.PasswordResetToken;
 import com.urbanservices.model.User;
 import com.urbanservices.repo.OtpRepository;
+import com.urbanservices.repo.PasswordResetTokenRepository;
 import com.urbanservices.repo.UserRepository;
 import com.urbanservices.response.ApiResponse;
+import com.urbanservices.response.LoginResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Optional;
 import java.util.Random;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +30,8 @@ public class UserService {
     private final OtpRepository otpRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final PasswordResetTokenRepository tokenRepository;
+
 
     // Register a user
     @Transactional
@@ -84,14 +91,20 @@ public class UserService {
     }
 
     // User Login
-    public ApiResponse login(LoginRequest request) {
+    public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            return new ApiResponse("Invalid credentials", false);
+            return new LoginResponse(null, "Invalid credentials", false);
         }
 
-        return new ApiResponse("Login successful", true);
+        return new LoginResponse(user.getId().toString(), "Login successful", true);
+    }
+
+
+
+    public User findById(Long id) {
+        return userRepository.findById(id).orElse(null); // Ensure it does not throw an error
     }
 }

@@ -31,4 +31,34 @@ public class EmailService {
             throw new RuntimeException("Failed to send email", e);
         }
     }
+
+
+    //  Sends Reset Password Email
+    public void sendResetPasswordEmail(String to, String resetLink) {
+        String subject = "Reset Your Password - Urban Services";
+        String text = "<p>Hello,</p>"
+                + "<p>We received a request to reset your password.</p>"
+                + "<p>Click the link below to reset your password:</p>"
+                + "<p><a href=\"" + resetLink + "\">Reset Password</a></p>"
+                + "<p>This link will expire in 30 minutes.</p>"
+                + "<p>If you did not request this, please ignore this email.</p>"
+                + "<p>Thank you, <br>Urban Services Team</p>";
+
+        sendEmail(to, subject, text);
+    }
+
+    //  Generic method to send emails
+    private void sendEmail(String to, String subject, String text) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(text, true); // Enable HTML content
+            mailSender.send(message);
+            System.out.println("Email sent to: " + to);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Failed to send email", e);
+        }
+    }
 }
